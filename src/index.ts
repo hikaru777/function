@@ -14,10 +14,10 @@ import * as functions from "firebase-functions";
 import * as firestore from "@google-cloud/firestore";
 import * as admin from "firebase-admin";
 import * as geolib from 'geolib';
-// const serviceAccount = require('locationmusicshareapp-firebase-adminsdk-zfkjp-b500260b7f.json');
+const serviceAccount = require('/projects/WaveSyncFunction/functions/locationmusicshareapp-firebase-adminsdk-zfkjp-b500260b7f.json');
 // Firebase Admin SDKを初期化
 admin.initializeApp({
-    // credential: admin.credential.cert(serviceAccount),
+    credential: admin.credential.cert(serviceAccount)
     // 他の初期化オプションを追加できます
   });
 
@@ -35,7 +35,7 @@ exports.messagePushNotify = functions.firestore.document("data/{userId}/peoplePa
             topic: userId, // 通知を受け取るトピックをユーザーのUIDに指定
             notification: {
                 title: '新しい人とすれ違いました',
-                body: `残り: ${documentCount}曲`,
+                body: `残り${documentCount}曲です`,
             },
         };
 
