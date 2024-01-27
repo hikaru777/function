@@ -23,12 +23,23 @@ admin.initializeApp({
 
 // Cloud Firestore trigger
 exports.messagePushNotify = functions.firestore.document("data/{userId}/peoplePassingBy/{documentId}")
-    .onUpdate(async (snap, context) => {
+    .onUpdate(async (change, context) => {
         const userId = context.params.userId;
         // Get roomId from params
-        const collectionRef = admin.firestore().collection(`data/${userId}/peoplePassingBy`);
+        const collectionRef = admin.firestore().collection("data").doc(userId).collection("peoplePassingBy").where("played", "==", false);
         const querySnapshot = await collectionRef.get();
         const documentCount = querySnapshot.size;
+        console.log("uid",userId)
+        console.log('full count:', documentCount);
+
+        const docRef = admin.firestore().collection('data').doc(userId);
+        const docSnapshot = await docRef.get();
+        const userData = docSnapshot.data()!.fcmToken;
+        const registrationToken = userData["fcmToken"];
+
+        console.log(registrationToken, userId);
+        // トピックにサブスクライブ
+        await admin.messaging().subscribeToTopic(registrationToken, userId);
 
         // Notification Details
         const message: admin.messaging.Message = {
@@ -78,7 +89,7 @@ exports.onCollectionUpdate = functions.firestore.document('/{collectionId}/{docu
                 const distance = geolib.getDistance(updatedLocation, otherLocation);
 
                 // 距離が3メートル以下かどうかをチェック
-                if (distance <= 5) {
+                if (distance <= 3) {
                     console.log('座標は5メートル以内にあります。');
                     
                     // PeoplePassingByコレクション内にデータを追加
